@@ -1,0 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-dark-purple: #2D0050;
+  --color-gray-blue: #6A8FC659;
+  --color-violet: #974FD0;
+  --color-secondary: #737171;
+  --color-surface: #B8B6B6;
+
+  --font-signika: "Signika", sans-serif;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 900ms ease-out;
+}

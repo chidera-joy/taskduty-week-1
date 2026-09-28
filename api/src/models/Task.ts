@@ -1,0 +1,43 @@
+import mongoose, {type Document} from "mongoose";
+interface TaskInt extends Document{
+    title: string
+    description: string
+    category: string
+    dueDate: string
+    completed: boolean
+}
+
+const TaskSchema = new mongoose.Schema<TaskInt>({
+  title: {
+    type: String,
+    required: true,
+  },
+
+  description: {
+    type: String,
+    required: true,
+  },
+
+  category: {
+    type: String,
+    required: true,
+  },
+
+  dueDate: {
+    type: String,
+    required: true,
+  },
+
+  completed: {
+    type: Boolean,
+    required: true,
+    default: false
+  }, 
+},
+
+{timestamps: true}
+);
+
+export const Task = mongoose.model<TaskInt>("Task", TaskSchema)
+
+
