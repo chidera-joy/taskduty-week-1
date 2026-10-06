@@ -8,6 +8,8 @@ import {
   taskIdSchema,
 } from "./validation/taskValidation.js";
 import cors from "cors";
+import authRoutes from "./auth/authRoutes.js";
+import { authMiddleWare } from "./middleware/authMiddlware.js";
 
 const app: Application = express();
 connectDB();
@@ -17,8 +19,9 @@ const PORT = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
-app.use(express.json());
-app.post("/tasks", async (req, res) => {
+app.use("/auth", authRoutes);
+
+app.post("/tasks", authMiddleWare, async (req, res) => {
   const date = new Date().toISOString().slice(0, 10);
   console.log(date);
   const result = createTaskSchema.safeParse(req.body);
@@ -37,6 +40,7 @@ app.post("/tasks", async (req, res) => {
       dueDate: data.dueDate,
       category: data.category,
       completed: data.completed,
+      userId: req.user!.id,
     });
     console.log(newTask);
     res.status(201).json({
@@ -52,9 +56,9 @@ app.post("/tasks", async (req, res) => {
   }
 });
 
-app.get("/tasks", async (req, res) => {
+app.get("/tasks", authMiddleWare, async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ userId: req.user!.id });
 
     return res.json({
       success: true,
@@ -70,7 +74,7 @@ app.get("/tasks", async (req, res) => {
   }
 });
 
-app.get("/tasks/:id", async (req, res) => {
+app.get("/tasks/:id", authMiddleWare, async (req, res) => {
   try {
     const idResult = taskIdSchema.safeParse(req.params.id);
 
@@ -82,7 +86,10 @@ app.get("/tasks/:id", async (req, res) => {
       });
     }
 
-    const task = await Task.findById(idResult.data);
+    const task = await Task.findOne({
+      _id: idResult.data,
+      userId: req.user!.id,
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -105,7 +112,7 @@ app.get("/tasks/:id", async (req, res) => {
   }
 });
 
-app.put("/tasks/:id", async (req, res) => {
+app.put("/tasks/:id", authMiddleWare, async (req, res) => {
   try {
     const idResult = taskIdSchema.safeParse(req.params.id);
 
@@ -129,7 +136,10 @@ app.put("/tasks/:id", async (req, res) => {
 
     const data = result.data;
 
-    const task = await Task.findById(idResult.data);
+   const task = await Task.findOne({
+     _id: idResult.data,
+     userId: req.user!.id,
+   });
 
     if (!task) {
       return res.status(404).json({
@@ -170,7 +180,7 @@ app.put("/tasks/:id", async (req, res) => {
   }
 });
 
-app.delete("/tasks/:id", async (req, res) => {
+app.delete("/tasks/:id", authMiddleWare, async (req, res) => {
   try {
     const idResult = taskIdSchema.safeParse(req.params.id);
 
@@ -182,7 +192,10 @@ app.delete("/tasks/:id", async (req, res) => {
       });
     }
 
-    const task = await Task.findById(idResult.data);
+    const task = await Task.findOne({
+      _id: idResult.data,
+      userId: req.user!.id,
+    });
 
     if (!task) {
       return res.status(404).json({

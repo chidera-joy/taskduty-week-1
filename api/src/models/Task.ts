@@ -5,9 +5,17 @@ interface TaskInt extends Document{
     category: string
     dueDate: string
     completed: boolean
+    userId: mongoose.Types.ObjectId
 }
 
 const TaskSchema = new mongoose.Schema<TaskInt>({
+
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+
   title: {
     type: String,
     required: true,
