@@ -10,6 +10,7 @@ import {
 import cors from "cors";
 import authRoutes from "./auth/authRoutes.js";
 import { authMiddleWare } from "./middleware/authMiddlware.js";
+// import type { ca } from "zod/locales";
 
 const app: Application = express();
 connectDB();
@@ -58,13 +59,29 @@ app.post("/tasks", authMiddleWare, async (req, res) => {
 
 app.get("/tasks", authMiddleWare, async (req, res) => {
   try {
-    const tasks = await Task.find({ userId: req.user!.id });
+    const search = req.query.search as string | undefined;
+
+    const filter: any={
+      userId:req.user!.id
+    }
+
+    if(search && search.trim()){
+      filter.$or = [
+        {title: {$regex: search.trim(), $options:"i"}},
+        {description: {$regex: search.trim(), $options: "i"}},
+        {category: {$regex: search.trim(), $options: "i"}}
+      ]
+    }
+
+    const tasks = await Task.find(filter)
 
     return res.json({
       success: true,
       tasks,
     });
-  } catch (error) {
+  } 
+  
+  catch (error) {
     console.error("Failed to fetch tasks:", error);
 
     return res.status(500).json({
