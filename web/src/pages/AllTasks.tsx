@@ -5,6 +5,7 @@ import edit from "../assets/edit.svg";
 import deleteIcon from "../assets/delete.svg";
 import DeleteModal from "../components/DeleteModal";
 
+import { apiRequest } from "../api/api";
 type Task = {
   _id: string;
   title: string;
@@ -23,46 +24,53 @@ const AllTasks = () => {
 
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [completionFilter, setCompletionFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    const getTasks = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/tasks");
+  // debounce
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(searchTerm);
+  }, 300);
 
-        const data = await response.json();
+  return () => clearTimeout(timer);
+}, [searchTerm]);
 
-        if (!response.ok) {
-          setError(data.message || "Failed to fetch tasks");
-          return;
-        }
+ useEffect(() => {
+   const getTasks = async () => {
+     try {
+       setError("");
 
-        setTasks(data.tasks);
-      } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-        setError("Something went wrong while fetching tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
+       const data = await apiRequest(
+         `/tasks?search=${encodeURIComponent(debouncedSearch)}`,
+       );
 
-    getTasks();
-  }, []);
+       setTasks(data.tasks);
+     } catch (error) {
+       console.error("Failed to fetch tasks:", error);
+
+       if (error instanceof Error && error.message === "Unauthorized") {
+         navigate("/login");
+         return;
+       }
+
+       setError("Something went wrong while fetching tasks");
+     } finally {
+       setLoading(false);
+     }
+   };
+
+   getTasks();
+ }, [navigate, debouncedSearch]);
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/tasks/${id}`, {
+      await apiRequest(`/tasks/${id}`, {
         method: "DELETE",
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Failed to delete task");
-        return;
-      }
 
       setTasks((prevTasks) =>
         prevTasks.filter((task) => task._id !== id)
@@ -75,27 +83,21 @@ const AllTasks = () => {
 
   const handleComplete = async (task: Task) => {
     try {
-      const response = await fetch(`http://localhost:3000/tasks/${task._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: task.title,
-          description: task.description,
-          dueDate: task.dueDate,
-          category: task.category,
-          completed: !task.completed,
-        }),
-      });
+    const data = await apiRequest(`/tasks/${task._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate,
+        category: task.category,
+        completed: !task.completed,
+      }),
+    });
 
-      const data = await response.json();
-      setError("");
-
-      if (!response.ok) {
-        setError(data.message || "Failed to update task");
-        return;
-      }
+    setError("");
 
       setTasks((prevTasks) =>
         prevTasks.map((item) => (item._id === task._id ? data.task : item)),
@@ -162,6 +164,28 @@ const AllTasks = () => {
               <option value="Not Completed">Not Completed</option>
             </select>
           </div>
+
+          {/* SEARCH  */}
+          <div className="flex items-center border border-surface rounded-sm px-3 py-2">
+            {" "}
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="outline-none w-full"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="ml-2 text-secondary hover cursor-pointer"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Error */}
@@ -173,13 +197,22 @@ const AllTasks = () => {
         )}
 
         {/* No tasks */}
-        {!loading && tasks.length === 0 && !error && (
+        {!loading && tasks.length === 0 && !error && !searchTerm && (
           <p className="text-center text-secondary py-10">No tasks yet.</p>
+        )}
+
+        {!loading && tasks.length === 0 && !error && searchTerm && (
+          <p className="text-center text-secondary py-10">
+            No tasks found for "{searchTerm}".
+          </p>
         )}
 
         {!loading && tasks.length > 0 && filteredTasks.length === 0 && (
           <p className="text-center text-secondary py-10">
-            No tasks match the selected filters.
+            {" "}
+            {searchTerm
+              ? `No tasks found for "${searchTerm}".`
+              : "No tasks match the selected filters."}{" "}
           </p>
         )}
 

@@ -2,6 +2,8 @@ import { NavBar } from "../components/NavBar";
 import back from "../assets/back.svg";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
+import { apiRequest } from "../api/api";
 const EditTask = () => {
   const navigate = useNavigate();
   const [tag, setTag] = useState("");
@@ -15,14 +17,7 @@ const EditTask = () => {
   useEffect(() => {
     const getTask = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/tasks/${id}`);
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.log(data.message);
-          return;
-        }
+        const data = await apiRequest(`/tasks/${id}`);
 
         setTitle(data.task.title);
         setDescription(data.task.description);
@@ -50,20 +45,13 @@ const EditTask = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:3000/tasks/${id}`, {
+      const data = await apiRequest(`/tasks/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(taskData),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.log(data.message);
-        return;
-      }
 
       console.log("Task updated:", data);
 

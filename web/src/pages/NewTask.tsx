@@ -2,6 +2,8 @@ import { NavBar } from '../components/NavBar'
 import back from '../assets/back.svg'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { apiRequest } from "../api/api";
 const NewTask = () => {
     const navigate = useNavigate()
     const [tag, setTag] = useState("")
@@ -38,20 +40,13 @@ const NewTask = () => {
       };
 
       try {
-        const response = await fetch("http://localhost:3000/tasks", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(taskData),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setError(data.message || "Failed to create task");
-          return;
-        }
+    const data = await apiRequest("/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(taskData),
+    });
 
         console.log("Task created:", data);
 

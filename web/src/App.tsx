@@ -6,6 +6,9 @@ import AllTasks from "./pages/AllTasks";
 import NewTask from "./pages/NewTask";
 import Home from "./pages/Home";
 import EditTask from "./pages/EditTask";
+import SignUp from "./pages/SignUp";
+import LogIn from "./pages/LogIn";
+import ProtectedRoute from "./routes/ProtectedRoutes";
 
 function App() {
   const location = useLocation();
@@ -23,29 +26,49 @@ function App() {
             }
           />
 
+          <Route element={<ProtectedRoute />}>
+            <Route
+              path="/all-tasks"
+              element={
+                <PageTransition>
+                  <AllTasks />
+                </PageTransition>
+              }
+            />
+
+            <Route
+              path="/new-task"
+              element={
+                <PageTransition>
+                  <NewTask />
+                </PageTransition>
+              }
+            />
+
+            <Route
+              path="/edit-task/:id"
+              element={
+                <PageTransition>
+                  <EditTask />
+                </PageTransition>
+              }
+            />
+          </Route>
+
           <Route
-            path="/all-tasks"
+            path="/login"
             element={
               <PageTransition>
-                <AllTasks />
+                <LogIn />
               </PageTransition>
             }
           />
 
           <Route
-            path="/new-task"
+            path="/signup"
             element={
               <PageTransition>
-                <NewTask />
-              </PageTransition>
-            }
-          />
-
-          <Route
-            path="/edit-task/:id"
-            element={
-              <PageTransition>
-                <EditTask />
+                <SignUp />
               </PageTransition>
             }
           />

@@ -2,14 +2,32 @@ import { MenuIcon, X } from "lucide-react";
 import Ellipse from "../assets/Ellipse.svg"
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
+import { getToken, removeToken } from "../api/api";
+import LogoutModal from "./LogoutModal";
+
 export const NavBar = () => {
     const navigate = useNavigate()
     const location = useLocation()
      const [menuOpen, setMenuOpen] = useState(false);
+     const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getToken()));
+
+     const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+     const handleLogout = () => {
+       removeToken();
+       setIsLoggedIn(false);
+       setShowLogoutModal(false);
+       setMenuOpen(false);
+       navigate("/login");
+     };
   return (
     <div className="p-5 md:px-20 py-5 font-signika flex justify-between items-center border-b border-b-surface">
       {/* left*/}
-      <div className="flex space-x-5 cursor-pointer" onClick={()=> navigate('/')}>
+      <div
+        className="flex space-x-2 cursor-pointer"
+        onClick={() => navigate("/")}
+      >
         <div className=" flex justify-center items-baseline bg-linear-to-bl from-dark-purple via-gray-blue to-violet w-10 h-10 rounded-br-[28.8px] rounded-tr-[28.8px] text-white text-5xl p-1 font-semibold">
           T
         </div>
@@ -36,6 +54,25 @@ export const NavBar = () => {
             New Task
           </button>
         )}
+
+        {isLoggedIn ? (
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="text-dark-purple cursor-pointer hover:text-violet"
+          >
+            Log Out
+          </button>
+        ) : (
+          location.pathname !== "/login" && (
+            <button
+              onClick={() => navigate("/login")}
+              className="text-dark-purple cursor-pointer hover:text-violet"
+            >
+              Login
+            </button>
+          )
+        )}
+
         {/* profile picture */}
         <div className="relative">
           <div className="absolute left-6 rounded-full w-2 h-2 bg-violet  hover:scale-105 transition"></div>
@@ -72,6 +109,27 @@ export const NavBar = () => {
                 </button>
               )}
 
+              {isLoggedIn ? (
+                <button
+                  onClick={() => setShowLogoutModal(true)}
+                  className="text-dark-purple"
+                >
+                  Log Out
+                </button>
+              ) : (
+                location.pathname !== "/login" && (
+                  <button
+                    onClick={() => {
+                      navigate("/login");
+                      setMenuOpen(false);
+                    }}
+                    className="text-dark-purple"
+                  >
+                    Login
+                  </button>
+                )
+              )}
+
               <div className="relative hover:scale-105 transition">
                 <div className="absolute left-6 rounded-full w-2 h-2 bg-violet"></div>
                 <img
@@ -84,6 +142,14 @@ export const NavBar = () => {
           </div>
         )}
       </div>
+
+      {/* logout modal */}
+      {showLogoutModal && (
+        <LogoutModal
+          onCancel={() => setShowLogoutModal(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </div>
   );
 };
