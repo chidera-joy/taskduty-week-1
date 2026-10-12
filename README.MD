@@ -1,41 +1,22 @@
-# TaskDuty
+# TaskDuty — Personal Task Manager
 
-TaskDuty is a personal task management application built with React, TypeScript, Tailwind CSS, Express, and MongoDB.
+TaskDuty is a personal task management application built to help users organize their daily activities, manage their tasks, and keep track of their progress.
 
-It allows authenticated users to create, view, edit, delete, complete, and manage their own tasks.
+The application allows users to create accounts, log in securely, create and manage tasks, search for specific tasks, and organize their tasks using categories and completion status.
 
 ## Features
 
-### Task Management
+* **User Authentication:** Users can create accounts and log in to access their tasks.
+* **Task Management:** Create, view, edit, and delete tasks.
+* **Task Search:** Search for tasks by title, description, or category.
+* **Task Categories:** Organize tasks into categories such as Urgent and Important.
+* **Task Filtering:** Filter tasks according to their category and completion status.
+* **Task Completion:** Mark tasks as completed or incomplete.
+* **Protected Routes:** Only authenticated users can access task management pages.
+* **User Data Protection:** Users can access and manage only their own tasks.
+* **Responsive Interface:** A simple interface for managing daily tasks.
 
-* Create a new task
-* View personal tasks
-* View a single task
-* Edit existing tasks
-* Delete tasks
-* Mark tasks as completed or incomplete
-* Filter tasks by category
-* Filter tasks by completion status
-* Form validation
-
-### Authentication & Authorization
-
-* User registration
-* User login
-* Password hashing with bcrypt
-* JWT-based authentication
-* Protected task routes
-* User-owned tasks
-* Users can only access and manage their own tasks
-
-## Task Categories
-
-Tasks can be assigned to one of two categories:
-
-* Urgent
-* Important
-
-## Tech Stack
+## Technologies Used
 
 ### Frontend
 
@@ -48,134 +29,158 @@ Tasks can be assigned to one of two categories:
 ### Backend
 
 * Node.js
-* Express
+* Express.js
+* TypeScript
 * MongoDB
 * Mongoose
+* JSON Web Tokens (JWT)
 * Zod
-* JSON Web Token (JWT)
-* bcryptjs
+
+## Task Search Implementation
+
+The task search feature allows users to find tasks without manually going through their entire task list.
+
+Users can search using:
+
+* Task titles
+* Task descriptions
+* Task categories
+
+### How It Works
+
+1. The user enters a search term in the search bar.
+2. React manages the search input using state.
+3. A debounce mechanism waits 300 milliseconds after the user stops typing before updating the search query. This helps reduce unnecessary API requests.
+4. The frontend sends the search term to the backend through the `/tasks` endpoint.
+5. The backend uses MongoDB queries with regular expressions to search the task title, description, and category without distinguishing between uppercase and lowercase letters.
+6. The backend filters the results by the authenticated user's ID to ensure users can access only their own tasks.
+7. The matching tasks are returned and displayed on the frontend.
+
+The search feature also supports clearing the search input and displaying an appropriate message when no matching tasks are found.
+
+### Example Request
+
+`GET /tasks?search=React`
+
+This request searches the authenticated user's tasks for the term `React`.
+
+## Authentication and Security
+
+TaskDuty uses JWT-based authentication to protect task management endpoints.
+
+After logging in, the frontend stores the authentication token and includes it in requests to protected backend routes.
+
+The backend uses the authenticated user's ID to restrict task access, helping prevent users from viewing or modifying another user's tasks.
+
+Sensitive environment variables, including database connection strings and authentication secrets, should be stored in a `.env` file and must not be committed to the repository.
 
 ## Project Structure
 
+The project is organized into separate frontend and backend applications.
+
 ```text
-week-1/
-├── api/
-│   └── Express backend
-│       ├── src/
-│       │   ├── auth/
-│       │   ├── config/
-│       │   ├── middleware/
-│       │   ├── models/
-│       │   ├── types/
-│       │   ├── validation/
-│       │   └── server.ts
-│       └── package.json
-│
+taskduty-week-1/
 ├── web/
-│   └── React frontend
-│
+│   └── src/
+│       ├── api/
+│       ├── components/
+│       ├── pages/
+│       └── ...
+├── api/
+│   └── src/
+│       └── ...
+├── .gitignore
 └── README.md
 ```
 
+*Note: This is a simplified overview of the project structure.*
+
 ## Getting Started
 
-### 1. Clone the repository
+### Prerequisites
+
+Before running the application, ensure you have installed:
+
+* Node.js
+* npm
+* MongoDB or access to a MongoDB Atlas database
+* Git
+
+### 1. Clone the Repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+git clone https://github.com/chidera-joy/taskduty-week-1.git
 ```
 
-### 2. Install frontend dependencies
+### 2. Navigate to the Project
 
 ```bash
-cd web
-npm install
+cd taskduty-week-1
 ```
 
-### 3. Start the frontend
+### 3. Set Up the Backend
 
-```bash
-npm run dev
-```
-
-### 4. Install backend dependencies
-
-Open another terminal:
+Open a terminal and run:
 
 ```bash
 cd api
 npm install
 ```
 
-### 5. Configure environment variables
+Create a `.env` file in the backend directory and configure the environment variables required by your backend, including your MongoDB connection string and JWT secret.
 
-Create a `.env` file inside the `api` folder:
+Use the variable names expected by your existing backend configuration.
 
-```env
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-PORT=3000
-```
+Start the backend using the appropriate development script defined in `api/package.json`.
 
-Do not commit your `.env` file or expose your MongoDB connection string or JWT secret.
+### 4. Set Up the Frontend
 
-### 6. Start the backend
+Open another terminal and run:
 
 ```bash
-npm run dev
+cd web
+npm install
 ```
 
-The frontend runs on the Vite development server and communicates with the Express backend.
+Start the frontend using the appropriate development script defined in `web/package.json`.
 
-## API Authentication
+Open the local address displayed in the terminal, usually:
 
-TaskDuty uses JWT authentication to protect task-related endpoints.
+`http://localhost:5173`
 
-### Authentication Endpoints
+**Important:** The backend and frontend must both be running for the application to work correctly.
 
-```text
-POST /auth/register
-POST /auth/login
-```
+## Testing
 
-### Task Endpoints
+The following functionality can be tested manually:
 
-```text
-POST   /tasks
-GET    /tasks
-GET    /tasks/:id
-PUT    /tasks/:id
-DELETE /tasks/:id
-```
+* Register a new user account.
+* Log in with valid credentials.
+* Create, edit, and delete tasks.
+* Mark tasks as completed or incomplete.
+* Search for tasks by title.
+* Search for terms contained in task descriptions.
+* Search using task categories.
+* Clear the search input.
+* Confirm that an unmatched search displays an appropriate message.
+* Verify that users cannot access another user's tasks.
+* Confirm that protected pages redirect unauthenticated users to the login page.
 
-Task endpoints require a valid JWT access token.
+## Learning Outcomes
 
-The token is sent using the Authorization header:
+Working on TaskDuty provided practical experience with:
 
-```text
-Authorization: Bearer YOUR_TOKEN
-```
-
-## Validation
-
-The application validates task and authentication data before processing requests.
-
-Zod is used to validate incoming request data, while the backend also performs authentication and database-level checks.
-
-## Security
-
-* Passwords are hashed before being stored in the database.
-* JWT tokens are used to authenticate protected requests.
-* Task ownership is linked to the authenticated user's ID.
-* Users cannot access, update, or delete tasks belonging to another user.
-* Environment variables are used for sensitive configuration.
-
-## Known Issues
-
-* The application currently runs locally and requires the backend server and MongoDB connection to be available.
-* Due-date handling may still depend on the current frontend form implementation.
+* Building a React application using TypeScript.
+* Connecting a frontend to a backend API.
+* Managing authentication and protected routes.
+* Working with Express.js and MongoDB.
+* Implementing search functionality using backend database queries.
+* Using React state and effects to manage search input and debounce requests.
+* Testing API endpoints and debugging application issues.
+* Using Git and GitHub for version control and feature development.
 
 ## Author
 
-**Madu Chidera Joy**
+**Chidera Madu Joy**
 
+TaskDuty was developed as part of my technical internship work to practise full-stack web development and build practical application features.
